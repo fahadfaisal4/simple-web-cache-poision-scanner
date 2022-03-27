@@ -20,6 +20,7 @@ second_default_header = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:78.0)
 # function for scanning subdomains
 def domain_scanner(sub_domnames):
     print(Fore.RED + '-------------------------Scanner Started--------------------------------')
+    space_line()
     print(Fore.BLUE + '------------------URL after scanning domains------------------------')
       
     # loop for getting URL's
@@ -28,25 +29,15 @@ def domain_scanner(sub_domnames):
         # making url by putting subdomain one by one
         url = f"https://{subdomain}/robots.txt?version=poc123"
           
-        # using try catch block to avoid crash of the program
-        
+        # using try catch block to avoid crash of
+        # the program
         try:
             
             # sending get request to the url
-            request_send = requests.get(url , headers = default_headers, cookies = cookies, timeout=6)
+            request_send = requests.get(url , headers = default_headers, cookies = cookies, timeout=6, allow_redirects= False)
               
             
-           
-        
-
-        except requests.exceptions.TooManyRedirects:
-            print(Fore.GREEN + url + " : Is vulnerable")    
-            f = open("vuln.txt", "a")
-            f.name.splitlines()
-            f.write(url)
-            f.close()
-    
-
+            
         # if url is invalid then pass it
 
         except requests.exceptions.ReadTimeout:
@@ -58,11 +49,46 @@ def domain_scanner(sub_domnames):
         except requests.exceptions.InvalidURL:
             print(Fore.BLUE + 'An invalid url found : ' + url)
 
+        except UnicodeError:
+            pass
+
         except KeyboardInterrupt:
             print(Fore.RED + "Exiting")
             exit()
 
+#sending request without x-forwaded-sheme to avoid false positivity
+
+        try : 
+             request_send = requests.get(url , headers = second_default_header, cookies = cookies, timeout=6,)
+
+
+        except requests.exceptions.ReadTimeout:
+            pass
+
+        except requests.ConnectionError:
+            pass
+        
+        except requests.exceptions.InvalidURL:
+            print(Fore.BLUE + 'An invalid url found : ' + url)
+
+        except UnicodeError:
+            pass
+
+        except KeyboardInterrupt:
+            print(Fore.RED + "Exiting")
+            exit()
+
+        except requests.exceptions.TooManyRedirects:
+            space_line()
+            print(Fore.GREEN + url + " : Is vulnerable")    
+            f = open("vuln.txt", "a")
+            f.name.splitlines()
+            f.write(url)
+            f.close()
+        
+
     print('\n')
+
     print(Fore.GREEN + '----Scanning Finished----')
   
 # main function
@@ -70,8 +96,10 @@ if __name__ == '__main__':
     
     print('\n')
    
+    domain_wordlist = "test.txt" 
+
 	
-    domain_wordlist = str(input(Fore.GREEN + "The domains file name : "))
+    domain_wordlist = str(input(Fore.GREEN + "The domains file name : (press enter for default)"))
 
 
 
